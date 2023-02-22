@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:dev": "ts-node-dev --inspect -r dotenv/config --files src/index.ts"
+    "start": "node dist/index.js",
+    "start:dev": "ts-node-dev --inspect -r dotenv/config --files src/index.ts",
+    "build": "tsc"
   },
   "author": "joaomrsouza",
   "license": "ISC",
