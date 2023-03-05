@@ -110,6 +110,7 @@ bot.callbackQuery(/details\:./, async (ctx) => {
 });
 
 setInterval(async () => {
+  console.log("Updating islands...");
   const users = await db.getUsersWithPrices();
 
   if (Object.keys(users).length === 0) return;
