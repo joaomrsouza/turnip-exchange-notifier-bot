@@ -5,7 +5,7 @@ export class DB {
   async getUsersWithPrices() {
     const users = await redisDb.hGetAll("users");
     const result: Map<string, number> = new Map();
-    for (const user in Object.keys(users)) {
+    for (const user of Object.keys(users)) {
       result.set(user, Number(users[user]));
     }
     return Object.fromEntries(result.entries());
