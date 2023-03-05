@@ -6,6 +6,23 @@ import { createMessageFromIsland } from "./helpers";
 const bot = new Bot(process.env.BOT_TOKEN!);
 const db = new DB();
 
+const debugEscopes = [
+  "commands",
+  "details",
+  "updating",
+  "sending",
+  "error",
+] as const;
+
+type DebugScope = typeof debugEscopes[number];
+
+const activeDebugScopes =
+  (Boolean(process.env.DEBUG) && process.env.DEBUG_SCOPES?.split(",")) || [];
+
+function debugLog(scope: DebugScope, ...args: any[]) {
+  if (activeDebugScopes.includes(scope)) console.log(...args);
+}
+
 bot.api.setMyCommands([
   { command: "start", description: "Start the bot" },
   { command: "price", description: "See the current price" },
@@ -16,6 +33,7 @@ bot.api.setMyCommands([
 ]);
 
 bot.command("start", (ctx) => {
+  debugLog("commands", "Start command received");
   ctx.reply(`Hello ${ctx.from?.first_name}! Welcome to the Turnip Exchange Notifier Bot.
 This bot will notify you when a new island is created with the price you are watching for.
 Islands are updated every 10 minutes.
@@ -27,6 +45,7 @@ Please note that this bot is just a notifier, it will not help you to join the q
 });
 
 bot.command("help", (ctx) => {
+  debugLog("commands", "Help command received");
   ctx.reply(`This bot will notify you when a new island is created with the price you are watching for.
 
 List of commands:
@@ -39,6 +58,7 @@ List of commands:
 });
 
 bot.command("price", async (ctx) => {
+  debugLog("commands", "Price command received");
   const price = ctx.from?.id && (await db.getUserPrice(ctx.from.id));
 
   if (price) {
@@ -53,6 +73,7 @@ bot.command("price", async (ctx) => {
 });
 
 bot.command("watchprice", (ctx) => {
+  debugLog("commands", "Watchprice command received");
   const price = Number(ctx.match);
 
   if (isNaN(price)) {
@@ -78,6 +99,7 @@ bot.command("watchprice", (ctx) => {
 });
 
 bot.command("clearprice", (ctx) => {
+  debugLog("commands", "Clearprice command received");
   ctx.from?.id && db.delUserPrice(ctx.from.id);
   ctx.reply(
     "We are no longer watching for prices, if you want to start again, use /watchprice {price}"
@@ -85,6 +107,7 @@ bot.command("clearprice", (ctx) => {
 });
 
 bot.command("credits", (ctx) => {
+  debugLog("commands", "Credits command received");
   ctx.reply(
     `This bot was developed by: @joaomrsouza.
 This bot use, but is not related to the Turnip.Exchange website: https://turnip.exchange (please support the creator of Turnip.Exchange at https://www.patreon.com/TurnipExchange).`
@@ -92,6 +115,7 @@ This bot use, but is not related to the Turnip.Exchange website: https://turnip.
 });
 
 bot.callbackQuery(/details\:./, async (ctx) => {
+  debugLog("details", "Details callback received");
   const islandName = ctx.callbackQuery.data.replace("details:", "");
   const island = await db.getIsland(islandName);
   if (island) {
@@ -110,13 +134,18 @@ bot.callbackQuery(/details\:./, async (ctx) => {
 });
 
 setInterval(async () => {
-  console.log("Updating islands...");
+  debugLog("updating", "===== Updating islands =====");
   const users = await db.getUsersWithPrices();
 
   if (Object.keys(users).length === 0) return;
 
   const islands = (await api.getIslands()).islands;
   await db.setIslands(islands);
+
+  debugLog(
+    "updating",
+    `Islands updated (${islands.length}): ${JSON.stringify(islands)}`
+  );
 
   try {
     const messagesSent: ReturnType<typeof bot.api.sendMessage>[] = [];
@@ -137,6 +166,8 @@ setInterval(async () => {
         inlineKeyboard.text(island.name, `details:${island.name}`);
       }
 
+      debugLog("sending", `Sending islands to ${user}`);
+
       messagesSent.push(
         bot.api.sendMessage(user, message, {
           parse_mode: "HTML",
@@ -146,6 +177,7 @@ setInterval(async () => {
     }
     await Promise.all(messagesSent);
   } catch (e) {
+    debugLog("error", `Error sending message: ${e}`);
     if (e instanceof GrammyError) {
       if (e.error_code === 403) {
         const userId = e.payload.chat_id as number;
