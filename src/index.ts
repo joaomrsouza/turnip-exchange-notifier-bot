@@ -223,3 +223,7 @@ setTimeout(() => {
     },
   });
 }, 10000);
+
+bot.errorBoundary((err) => {
+  debugLog("error", `Error: ${err.message}`);
+});
