@@ -1,4 +1,4 @@
-import { Bot, GrammyError, InlineKeyboard } from "grammy";
+import { Bot, GrammyError, HttpError, InlineKeyboard } from "grammy";
 import { api } from "./api";
 import { DB } from "./db";
 import { createMessageFromIsland } from "./helpers";
@@ -224,6 +224,15 @@ setTimeout(() => {
   });
 }, 10000);
 
-bot.errorBoundary((err) => {
-  debugLog("error", `Error: ${err.message}`);
+bot.catch((err) => {
+  const ctx = err.ctx;
+  debugLog("error", `Error while handling update ${ctx.update.update_id}:`);
+  const e = err.error;
+  if (e instanceof GrammyError) {
+    debugLog("error", "Error in request:", e.description);
+  } else if (e instanceof HttpError) {
+    debugLog("error", "Could not contact Telegram:", e);
+  } else {
+    debugLog("error", "Unknown error:", e);
+  }
 });
