@@ -7,6 +7,7 @@ const bot = new Bot(process.env.BOT_TOKEN!);
 const db = new DB();
 
 const debugEscopes = [
+  "boot",
   "commands",
   "details",
   "updating",
@@ -133,13 +134,19 @@ bot.callbackQuery(/details\:./, async (ctx) => {
   await ctx.answerCallbackQuery();
 });
 
-setInterval(async () => {
+async function updateAndSendIslands() {
   debugLog("updating", "===== Updating islands =====");
   const users = await db.getUsersWithPrices();
 
   if (Object.keys(users).length === 0) return;
 
   const islands = (await api.getIslands()).islands;
+
+  if (islands.every((i) => i.name === "No Islands")) {
+    debugLog("updating", "No islands found");
+    return;
+  }
+
   await db.setIslands(islands);
 
   debugLog(
@@ -187,7 +194,12 @@ setInterval(async () => {
       }
     }
   }
-}, 1000 * Number(process.env.UPDATE_INTERVAL_SECONDS ?? 10 * 60));
+}
+
+setInterval(
+  updateAndSendIslands,
+  1000 * Number(process.env.UPDATE_INTERVAL_SECONDS ?? 10 * 60)
+);
 
 bot.on("message", async (ctx) => {
   ctx.reply(
@@ -195,4 +207,19 @@ bot.on("message", async (ctx) => {
   );
 });
 
-bot.start();
+debugLog("boot", "Starting bot in 10 seconds");
+
+setTimeout(() => {
+  debugLog("boot", "Starting bot...");
+  bot.start({
+    drop_pending_updates: true,
+    onStart: (_ctx) => {
+      debugLog("boot", "===== Bot started =====");
+      debugLog(
+        "boot",
+        `Current update interval: ${process.env.UPDATE_INTERVAL_SECONDS} seconds`
+      );
+      updateAndSendIslands();
+    },
+  });
+}, 10000);
