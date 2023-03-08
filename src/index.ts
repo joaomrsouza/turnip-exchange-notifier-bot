@@ -1,7 +1,16 @@
+import express from "express";
 import { Bot, GrammyError, HttpError, InlineKeyboard } from "grammy";
 import { api } from "./api";
 import { DB } from "./db";
 import { createMessageFromIsland } from "./helpers";
+
+const app = express();
+
+app.get("/", (req, res) => {
+  res.send(200);
+});
+
+app.listen(process.env.PORT || 3000);
 
 const bot = new Bot(process.env.BOT_TOKEN!);
 const db = new DB();
