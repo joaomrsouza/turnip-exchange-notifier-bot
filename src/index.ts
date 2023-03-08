@@ -86,7 +86,7 @@ async function updateAndSendIslands() {
   }
 }
 
-debugLog("boot", "Starting bot in 30 seconds");
+debugLog("boot", `Starting bot in ${process.env.INIT_TIME} seconds`);
 
 setTimeout(() => {
   debugLog("boot", "Starting bot...");
@@ -236,4 +236,4 @@ This bot use, but is not related to the Turnip.Exchange website: https://turnip.
       updateAndSendIslands();
     },
   });
-}, 30000);
+}, (Number(process.env.INIT_TIME) || 30) * 1000);
