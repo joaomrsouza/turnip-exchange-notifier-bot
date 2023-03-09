@@ -1,6 +1,6 @@
-# fly.toml file generated for turnip-exchange-notifier-bot on 2023-03-08T21:04:05-03:00
+# fly.toml file generated for snowy-shadow-1198 on 2023-03-08T21:04:05-03:00
 
-app = "turnip-exchange-notifier-bot"
+app = "snowy-shadow-1198"
 kill_signal = "SIGINT"
 kill_timeout = 5
 primary_region = "gru"
