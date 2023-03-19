@@ -1,7 +1,7 @@
 import { TurnipExchangeAPIIsland } from "./api";
 import { redisDb } from "./redis";
 
-export class DB {
+class DB {
   async getUsersWithPrices() {
     const users = await redisDb.hGetAll("users");
     const result: Map<string, number> = new Map();
@@ -35,3 +35,5 @@ export class DB {
     ) as TurnipExchangeAPIIsland;
   }
 }
+
+export const db = new DB();
