@@ -1,4 +1,9 @@
+# fly.toml app configuration file generated for turnip-exchange-notifier-bot on 2023-05-26T18:56:35-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = "turnip-exchange-notifier-bot"
+primary_region = "gru"
 kill_signal = "SIGINT"
-kill_timeout = 5
-processes = []
+kill_timeout = "5s"
